@@ -1,0 +1,53 @@
+[hekad]
+maxprocs = 2
+
+{% if input == 'file' %}
+
+[logs_input]
+type = "LogstreamerInput"
+{% if hostname is defined %}
+hostname = "{{ hostname }}"
+{% endif %}
+log_directory = "{{ log_directory }}"
+file_match = "{{ file_match }}"
+{% if priority is defined %}
+priority = {{ priority }}
+{% endif %}
+{% if differentiator is defined %}
+differentiator = {{ differentiator }}
+{% endif %}
+
+
+{% elif input == 'docker' %}
+
+[DockerLogInput]
+
+{% elif input == 'tcp' %}
+
+[TcpInput]
+address = ":{{ receiver_port | default('5565') }}"
+
+{% endif %}
+
+{% if output == 'tcp' %}
+
+[logs_output]
+type = "TcpOutput"
+address = "{{ log_output_tcp_address }}"
+message_matcher = "TRUE"
+
+{% elif output == 'file' %}
+
+[PayloadEncoder]
+
+[logs_output]
+type = "FileOutput"
+message_matcher = "TRUE"
+path = "{{ log_output_path }}"
+perm = "{{ log_output_perm | default('644') }}"
+folder_perm = "{{ log_output_folder_perm | default('700') }}"
+flush_count = {{ flush_count | default(100) }}
+flush_operator = "OR"
+encoder = "PayloadEncoder"
+
+{% endif %}
